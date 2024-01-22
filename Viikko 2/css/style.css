@@ -42,13 +42,6 @@ li a:hover {
     display: flex;
 }
 
-#footer {
-    display: flex;
-    background-color: #F5ECE0;
-    color: #48330E;
-    font-size: 26px;
-}
-
 #info {
     display: flex;
     background-color: #F5ECE0;
@@ -64,16 +57,7 @@ aside {
     width: 15%
 }
 
-footer {
-    margin-left: 5px;
-    padding: 30px;
-    text-align: center;
-    margin-bottom: 10px;
-    background-color: #F5ECE0;
-    color: #48330E;
-    border-color: #48330E;
-    border-radius: 5px;
-}
+
 
 @media screen and (max-width: 1200px) {
     #content{
