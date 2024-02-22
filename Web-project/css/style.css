@@ -30,10 +30,13 @@ div#container {
 div#content {
     flex: 1;
     position: relative;
+    margin-right: 20%;
+    margin-bottom: 3%;
     display: flex;
     flex-direction: row;
     justify-content: center;
-    height: 100vh;
+    height: 100vw;
+    width: 75vw;
     box-sizing: border-box;
     align-items: flex-start;
 }
@@ -78,6 +81,7 @@ nav {
     justify-content: center;
     border-top: 1px solid var(--dark-foreground-color);
     border-bottom: 1px solid var(--dark-foreground-color);
+    margin-bottom: 2%;
     background-color: var(--dark-background-color);
     font-size: 1.25em;
     padding: 0 25px;
@@ -149,28 +153,52 @@ img:hover {
 }
 
 aside {
-    position: relative;
+    position: fixed;
     right: 0;
     width: 17%;
     height: auto;
     padding-left: 15px;
     margin-left: auto;
-    border-left: 5px solid var(--dark-foreground-color);
+    border-left: 1px solid var(--dark-foreground-color);
+    bottom: calc(100px + 20px);
     float: right;
     font-style: italic;
 }
+
+#prevPage, #nextPage {
+    margin: 5px 0;
+}  
 
 footer {
     background-color: var(--dark-background-color);
     justify-content: center;
     align-items: center;
     bottom: 0;
+    margin-top: 5px;
     width: 100%;
     height: 100px;
 }
 
 #results {
     flex: 1;
+}
+
+#ratingsContainer {
+    margin-top: 20px;
+    margin-left: 100px;
+}
+
+#titleRatings {
+    flex: 1;
+    position: relative;
+    margin-right: 20%;
+    margin-left: 5%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    height: 100vh;
+    box-sizing: border-box;
+    align-items: flex-start;
 }
 
 .book-container {

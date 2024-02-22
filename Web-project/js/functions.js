@@ -1,4 +1,6 @@
 
+let currentPage = 1;
+let currentQuery = '';
 
 function saveApiKey(apiKey) {
     localStorage.setItem("apikey", apiKey);
@@ -8,30 +10,103 @@ function getApiKey() {
     return localStorage.getItem("apikey");
 }
 
-function fetchBooks(query) {
+function fetchBooks(query, page) {
     //const apiKey = getApiKey();
+
     if (!apiKey) {
         console.error("API key is not set");
         return;
     }
 
-    fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}&key=${apiKey}`)
-        .then(response => response.json())
-        .then(data => displayResults(data.items))
-        .catch(error => console.error('Error:', error));
+    const maxResults = 10;
+    const startIndex = (page - 1) * maxResults;
+
+    fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&startIndex=${startIndex}&maxResults=${maxResults}&key=${apiKey}`)
+    .then(response => response.json())
+    .then(data => {
+        console.log(data.totalItems);
+        displayResults(data.items);
+        updateButtons(data.totalItems);
+    })
+    .catch(error => console.error('Error:', error));
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-    const searchForm = document.getElementById('searchForm');
-    searchForm.addEventListener("submit", function(e) {
-        e.preventDefault(); 
-        const query = document.getElementById('searchInput').value;
-        fetchBooks(query);
+const prevPageButton = document.querySelector('#prevPage');
+const nextPageButton = document.querySelector('#nextPage');
+const searchForm = document.querySelector('#searchForm');
+
+if (prevPageButton && nextPageButton) {
+    prevPageButton.style.display = 'none';
+    nextPageButton.style.display = 'none';
+
+    prevPageButton.addEventListener("click", function() {
+        if (currentPage > 1) {
+            currentPage--;
+            fetchBooks(currentQuery, currentPage);
+            scrollToResults(); 
+        }
     });
-});
+
+    nextPageButton.addEventListener("click", function() {
+        currentPage++;
+        fetchBooks(currentQuery, currentPage);
+        scrollToResults();
+    });
+}
+
+if (searchForm) {
+    searchForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        currentPage = 1;
+        currentQuery = document.querySelector('#searchInput').value;
+        fetchBooks(currentQuery, currentPage);
+    });
+}
+
+function updateButtons(totalItems) {
+    const maxResults = 10;
+    document.querySelector("#prevPage").style.display = currentPage > 1 ? 'block' : 'none';
+    let morePagesAvailable = (currentPage * maxResults) < totalItems;
+    document.querySelector("#nextPage").style.display = morePagesAvailable ? 'block' : 'none';
+}
+
+function scrollToResults() {
+    const resultsElement = document.querySelector('#results');
+
+    if (resultsElement) {
+        resultsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function saveRating(title, rating) {
+    const ratings = JSON.parse(localStorage.getItem("bookRatings") || "{}");
+    ratings[title] = rating;
+    localStorage.setItem("bookRatings", JSON.stringify(ratings));
+    console.log(`Rating saved: ${title} - ${rating} stars`);
+    displayRatings();
+}
+
+function displayRatings() {
+    const ratingsContainer = document.querySelector('#ratingsContainer');
+
+    if (!ratingsContainer) {
+        return;
+    }
+
+    const ratings = JSON.parse(localStorage.getItem("bookRatings") || "{}");
+    ratingsContainer.innerHTML = '';
+
+    Object.keys(ratings).forEach(title => {
+        const rating = ratings[title];
+        const element = document.createElement('div');
+        element.innerHTML = `<p>${title}: ${rating} tähteä</p>`;
+        element.style.marginBottom = "20px";
+        ratingsContainer.appendChild(element);
+    });
+}
 
 function displayResults(books) {
-    const resultsContainer = document.getElementById('results');
+    const resultsContainer = document.querySelector('#results');
     resultsContainer.innerHTML = '';
 
     books.forEach(book => {
@@ -68,6 +143,9 @@ function displayResults(books) {
         element.appendChild(ratingContainer);
         resultsContainer.appendChild(element);
         element.className = 'book-container';
-
     });
+}
+
+if (document.querySelector('#ratingsContainer')) {
+    displayRatings();
 }
