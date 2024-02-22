@@ -1,4 +1,4 @@
-let apiKey = "AIzaSyAwin1IUf7024YSQKVwr9AapQKy2s75u04";
+
 
 function saveApiKey(apiKey) {
     localStorage.setItem("apikey", apiKey);
