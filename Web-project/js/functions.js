@@ -1,20 +1,22 @@
-
 let currentPage = 1;
 let currentQuery = '';
+window.addEventListener('scroll', adjustFooter);
+adjustFooter();
 
 function saveApiKey(apiKey) {
-    localStorage.setItem("apikey", apiKey);
+    localStorage.setItem('apikey', apiKey);
+    return "Success!";
 }
 
 function getApiKey() {
-    return localStorage.getItem("apikey");
+    return localStorage.getItem('apikey');
 }
 
 function fetchBooks(query, page) {
-    //const apiKey = getApiKey();
+    const apiKey = getApiKey();
 
     if (!apiKey) {
-        console.error("API key is not set");
+        console.error('API key is not set');
         return;
     }
 
@@ -39,7 +41,7 @@ if (prevPageButton && nextPageButton) {
     prevPageButton.style.display = 'none';
     nextPageButton.style.display = 'none';
 
-    prevPageButton.addEventListener("click", function() {
+    prevPageButton.addEventListener('click', function() {
         if (currentPage > 1) {
             currentPage--;
             fetchBooks(currentQuery, currentPage);
@@ -47,7 +49,7 @@ if (prevPageButton && nextPageButton) {
         }
     });
 
-    nextPageButton.addEventListener("click", function() {
+    nextPageButton.addEventListener('click', function() {
         currentPage++;
         fetchBooks(currentQuery, currentPage);
         scrollToResults();
@@ -55,7 +57,7 @@ if (prevPageButton && nextPageButton) {
 }
 
 if (searchForm) {
-    searchForm.addEventListener("submit", function(e) {
+    searchForm.addEventListener('submit', function(e) {
         e.preventDefault();
         currentPage = 1;
         currentQuery = document.querySelector('#searchInput').value;
@@ -65,9 +67,9 @@ if (searchForm) {
 
 function updateButtons(totalItems) {
     const maxResults = 10;
-    document.querySelector("#prevPage").style.display = currentPage > 1 ? 'block' : 'none';
+    document.querySelector('#prevPage').style.display = currentPage > 1 ? 'block' : 'none';
     let morePagesAvailable = (currentPage * maxResults) < totalItems;
-    document.querySelector("#nextPage").style.display = morePagesAvailable ? 'block' : 'none';
+    document.querySelector('#nextPage').style.display = morePagesAvailable ? 'block' : 'none';
 }
 
 function scrollToResults() {
@@ -79,11 +81,12 @@ function scrollToResults() {
 }
 
 function saveRating(title, rating) {
-    const ratings = JSON.parse(localStorage.getItem("bookRatings") || "{}");
+    const ratings = JSON.parse(localStorage.getItem('bookRatings') || '{}');
     ratings[title] = rating;
-    localStorage.setItem("bookRatings", JSON.stringify(ratings));
+    localStorage.setItem('bookRatings', JSON.stringify(ratings));
     console.log(`Rating saved: ${title} - ${rating} stars`);
     displayRatings();
+    updateStarsVisual(title, rating);
 }
 
 function displayRatings() {
@@ -93,14 +96,14 @@ function displayRatings() {
         return;
     }
 
-    const ratings = JSON.parse(localStorage.getItem("bookRatings") || "{}");
+    const ratings = JSON.parse(localStorage.getItem('bookRatings') || '{}');
     ratingsContainer.innerHTML = '';
 
     Object.keys(ratings).forEach(title => {
         const rating = ratings[title];
         const element = document.createElement('div');
-        element.innerHTML = `<p>${title}: ${rating} tähteä</p>`;
-        element.style.marginBottom = "20px";
+        element.innerHTML = `<p>${title}: ${rating} stars</p>`;
+        element.style.marginBottom = '20px';
         ratingsContainer.appendChild(element);
     });
 }
@@ -114,8 +117,11 @@ function displayResults(books) {
         const element = document.createElement('div');
         
         const ratingContainer = document.createElement('div');
-        ratingContainer.innerHTML = 'Arvostele: ';
+        ratingContainer.innerHTML = 'Rate: ';
         for (let i = 1; i <= 5; i++) {
+            const ratingBox = document.createElement('div');
+            ratingBox.className = 'rating-box';
+
             const star = document.createElement('input');
             star.type = 'radio';
             star.id = `star-${info.title}-${i}`;
@@ -126,18 +132,20 @@ function displayResults(books) {
 
             const label = document.createElement('label');
             label.htmlFor = `star-${info.title}-${i}`;
-            label.textContent = '★';
-            ratingContainer.appendChild(label);
+            label.innerHTML = ''.padStart(i, '★');
+            ratingBox.appendChild(label);
+
+            ratingContainer.appendChild(ratingBox);
         }
 
         element.innerHTML = `
             <h2>${info.title}</h2>
-            ${info.authors ? `<p>Tekijä(t): ${info.authors.join(", ")}</p>` : "<p>Tekijää ei saatavilla.</p>"}
-            ${info.publishedDate ? `<p>Julkaisuvuosi: ${info.publishedDate}</p>` : "<p>Julkaisuvuosi ei saatavilla.</p>"}
-            ${info.imageLinks ? `<img src="${info.imageLinks.thumbnail}" alt="${info.title}" style="max-width:100px;"><br>` : ''}
-            ${info.description ? `<p>Kuvaus: ${info.description}</p>` : "<p>Kuvausta ei saatavilla.</p>"}
-            ${info.categories ? `<p>Kategoriat: ${info.categories.join(", ")}</p>` : "<p>Kategorioita ei saatavilla.</p>"}
-            ${info.infoLink ? `<a href="${info.infoLink}" style="color: blue" target="_blank">Lue lisää (Google)</a>` : ""}
+            ${info.authors ? `<p>Tekijä(t): ${info.authors.join(', ')}</p>` : '<p>Tekijää ei saatavilla.</p>'}
+            ${info.publishedDate ? `<p>Julkaisuvuosi: ${info.publishedDate}</p>` : '<p>Julkaisuvuosi ei saatavilla.</p>'}
+            ${info.imageLinks ? `<img src='${info.imageLinks.thumbnail}' alt='${info.title}' style='max-width:100px;'><br>` : ''}
+            ${info.description ? `<p>Kuvaus: ${info.description}</p>` : '<p>Kuvausta ei saatavilla.</p>'}
+            ${info.categories ? `<p>Kategoriat: ${info.categories.join(', ')}</p>` : '<p>Kategorioita ei saatavilla.</p>'}
+            ${info.infoLink ? `<a href='${info.infoLink}' style='color: blue' target='_blank'>Lue lisää (Google)</a>` : ''}
             `;
 
         element.appendChild(ratingContainer);
@@ -148,4 +156,24 @@ function displayResults(books) {
 
 if (document.querySelector('#ratingsContainer')) {
     displayRatings();
+}
+
+function adjustFooter() {
+    const footer = document.querySelector('footer');
+    const startOpacity = 0;
+    const fadeDistance = 700;
+    let opacity = Math.min(0.3, startOpacity + window.pageYOffset / fadeDistance);
+    footer.style.opacity = opacity;
+}
+
+function updateStarsVisual(title, rating) {
+    for (let i = 1; i <= 5; i++) {
+        const starId = `star-${title}-${i}`;
+        const label = document.querySelector(`label[for='${starId}']`);
+        if (i <= rating) {
+            label.style.color = 'gold';
+        } else {
+            label.style.color = 'gray';
+        }
+    }
 }
